@@ -11,3 +11,6 @@ help_message = '''
     '''
 
 how_many_goods_message = 'Сколько товаров вывести?'
+
+low_lim_message = 'Введите нижнюю границу цен'
+high_lim_message = 'Введите верхнюю границу цен'
