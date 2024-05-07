@@ -1,60 +1,27 @@
 import telebot
-from all_in_one import all_in_one_func
+from config import token
+from functions import command_func
+import messages
 
-
-token = '6855239878:AAEnHljJy9MjG9vfqqi8hsjnTksnEv0Bd98'
 bot = telebot.TeleBot(token)
 
 
-@bot.message_handler(commands=['start'])
-def start_message(message):
-    bot.send_message(message.chat.id, 'Привет :)')
+@bot.message_handler(commands=['low'])
+def low(message):
+    bot.send_message(message.chat.id, messages.how_many_goods_message)
+    #как-то получить аргументы
+    bot.send_message(message.chat.id, command_func('аргументы'))
 
 
-@bot.message_handler(commands=['low', 'high', 'hot', 'custom'])
-def main(message):
-    if message.text.lower() == '/low':
-        bot.send_message(message.chat.id, 'Сколько товаров вывести?')
-
-        @bot.message_handler(content_types=['text'])
-        def how_many(message):
-            user_input = message.text
-            bot.send_message(message.chat.id, f'{all_in_one_func(user_input)}')
-
-    elif message.text.lower() == '/high':
-        bot.send_message(message.chat.id, 'Сколько товаров вывести?')
-
-        @bot.message_handler(content_types=['text'])
-        def how_many(message):
-            user_input = message.text
-            bot.send_message(message.chat.id, f'{all_in_one_func(how_many=user_input, reverse=True)}')
-
-    elif message.text.lower() == '/hot':
-        bot.send_message(message.chat.id, 'Сколько товаров вывести?')
-
-        @bot.message_handler(content_types=['text'])
-        def how_many(message):
-            user_input = message.text
-            bot.send_message(message.chat.id, all_in_one_func(how_many=user_input, sorted_by='orders_quantity'))
-
-    elif message.text.lower() == '/custom':
-        bot.send_message(
-            message.chat.id,
-            'Напишите через пробел, сколько товаров вывести, нижнюю границу и верхнюю границу цен.'
-        )
-
-        @bot.message_handler(content_types=['text'])
-        def how_many(message):
-            user_input = message.text.split()
-
-            how_many = int(user_input[0])
-            low_lim = int(user_input[1])
-            high_lim = int(user_input[2])
-
-            bot.send_message(
-                message.chat.id,
-                f'{all_in_one_func(how_many=how_many, low_lim=low_lim, high_lim=high_lim)}'
-            )
+@bot.message_handler(commands=['start', 'help'])
+def start_or_help_message(message):
+    bot.send_message(message.chat.id, messages.help_message)
 
 
-bot.polling(none_stop=True)
+@bot.message_handler(content_types=["text"])
+def echo_text(message):
+    bot.send_message(message.chat.id, message.text)
+
+
+if __name__ == '__main__':
+    bot.infinity_polling()

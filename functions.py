@@ -1,7 +1,7 @@
 from goods import goods
 
 
-def all_in_one_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_lim=None):
+def command_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_lim=None):
     goods_list = sorted(goods, key=lambda d: d[sorted_by], reverse=reverse)
 
     if low_lim != None and high_lim != None:
