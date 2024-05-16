@@ -1,7 +1,7 @@
 import telebot
 
 from config import token
-from sort_goods_list_function import command_func
+from core import command_func, history_input_func, history_output_func, statistics_input_func, statistics_output_func
 from commands import default_commands
 import messages
 
@@ -9,83 +9,141 @@ import messages
 bot = telebot.TeleBot(token)
 
 
-# @bot.message_handler(commands=['hello-world'])
-
 @bot.message_handler(commands=['hello_world'])
 def hello(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     bot.send_message(message.chat.id, 'hello-hello')
 
 
 @bot.message_handler(commands=['low'])
 def low_command(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     bot.send_message(message.chat.id, messages.how_many_goods)
     bot.register_next_step_handler(message, low_command_output)
 
 
 def low_command_output(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     how_many = message.text
     bot.send_message(message.chat.id, command_func(how_many=how_many))
 
 
 @bot.message_handler(commands=['high'])
 def high_command(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     bot.send_message(message.chat.id, messages.how_many_goods)
     bot.register_next_step_handler(message, high_command_output)
 
 
 def high_command_output(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     how_many = message.text
     bot.send_message(message.chat.id, command_func(how_many=how_many, reverse=True))
 
 
 @bot.message_handler(commands=['hot'])
 def hot_command(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     bot.send_message(message.chat.id, messages.how_many_goods)
     bot.register_next_step_handler(message, hot_command_output)
 
 
 def hot_command_output(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     how_many = message.text
     bot.send_message(message.chat.id, command_func(how_many=how_many, reverse=True, sorted_by='orders_quantity'))
 
 
 @bot.message_handler(commands=['custom'])
 def custom_command(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     bot.send_message(message.chat.id, messages.how_many_goods)
     bot.register_next_step_handler(message, custom_how_many)
 
 
 def custom_how_many(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     how_many = message.text
     bot.send_message(message.chat.id, messages.low_lim_message)
     bot.register_next_step_handler(message, custom_low_lim, how_many)
 
 
 def custom_low_lim(message, how_many):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     low_lim = message.text
     bot.send_message(message.chat.id, messages.high_lim_message)
     bot.register_next_step_handler(message, custom_high_lim, how_many, low_lim)
 
 
 def custom_high_lim(message, how_many, low_lim):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     high_lim = message.text
     bot.send_message(message.chat.id, command_func(how_many=how_many, low_lim=low_lim, high_lim=high_lim))
 
 
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(commands=['start'])
 def start_or_help_message(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
+    bot.send_message(message.chat.id, messages.start_message)
+
+
+@bot.message_handler(commands=['help'])
+def help_message(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     bot.send_message(message.chat.id, messages.help_message)
 
 
-@bot.message_handler(content_types=['text'])
-def hello(message):
+@bot.message_handler(commands=['history'])
+def history_message(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
+    bot.send_message(message.chat.id, history_output_func())
+
+
+@bot.message_handler(commands=['statistics'])
+def output_statistics_message(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
+    bot.send_message(message.chat.id, statistics_output_func())
+
+
+@bot.message_handler(content_types=["text"])
+def echo_text(message):
+    history_input_func(message)
+    statistics_input_func(message.text)
+
     if message.text.lower() == 'привет':
         bot.send_message(message.chat.id, 'Привет :)')
-
-
-# @bot.message_handler(content_types=["text"])
-# def echo_text(message):
-#     bot.send_message(message.chat.id, message.text)
+    else:
+        bot.send_message(message.chat.id, message.text)
 
 
 if __name__ == '__main__':

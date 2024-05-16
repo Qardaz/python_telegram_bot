@@ -5,6 +5,8 @@ default_commands = [
     BotCommand('hello_world', 'привет, мир'),
     BotCommand('start', 'начало работы'),
     BotCommand('help', 'помощь'),
+    BotCommand('history', 'вывод последних Ваших сообщений, адресованных боту'),
+    BotCommand('statistics', 'вывод самых часто задаваемых запросов'),
     BotCommand('low', 'сортировка товаров по возрастанию цены'),
     BotCommand('high', 'сортировка товаров по убыванию цены'),
     BotCommand('hot', 'сортировка товаров по убыванию количества заказов'),
