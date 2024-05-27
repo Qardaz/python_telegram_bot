@@ -1,29 +1,43 @@
 from datetime import datetime
 import json
-from operator import itemgetter
-
+import os
 from goods import goods
 
 
 def command_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_lim=None):
     goods_list = sorted(goods, key=lambda d: d[sorted_by], reverse=reverse)
+    how_many = int(how_many)
+    answer_string = ''
+    if how_many > len(goods_list):
+        how_many = len(goods_list)
+        answer_string += 'Введено число, превышающее общее количество товаров. Будут выведены все товары.\n'
 
-    if low_lim != None and high_lim != None:
+    if low_lim and high_lim:
+        low_lim, high_lim = int(low_lim), int(high_lim)
+
         new_goods_list = list()
+
+        if low_lim > high_lim:
+            low_lim, high_lim = high_lim, low_lim
+
+        if low_lim == high_lim:
+            return 'Верхняя и нижняя границы не могут быть равны. Повторите команду заново.'
+
+        if high_lim - low_lim < how_many:
+            how_many = high_lim - low_lim + 1
+
+        if low_lim > how_many:
+            return 'Нижняя граница превышает стоимость самого дорогого товара. Повторите команду заново.'
+
+        if high_lim < how_many:
+            return 'Верхняя граница ниже стоимости самого дешевого товара. Повторите команду заново.'
 
         for i in range(len(goods_list)):
             price = goods_list[i].get('price')
-            if price > int(low_lim) and price < int(high_lim):
+            if price >= low_lim and price <= high_lim:
                 new_goods_list.append(goods_list[i])
 
         goods_list = new_goods_list
-
-    how_many = int(how_many)
-
-    if how_many > len(goods_list):
-        how_many = len(goods_list)
-
-    answer_string = ''
 
     for i in range(how_many):
         name = goods_list[i].get('name')
@@ -34,21 +48,70 @@ def command_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_
     return answer_string
 
 
+def check_message_func(message):
+    if not message.isdigit():
+        return False
+    elif int(message) == 0:
+        return False
+    return True
+
+
+def show_all_func():
+    output_message = 'Список товаров:\n'
+
+    for good in goods:
+        output_message += (
+            f'\nНаименование товара: {good["name"]}\n'
+            f'Цена товара: {good["price"]}$\n'
+        )
+
+    return output_message
+
+
+def check_good_func(message):
+    goods_list = [good['name'] for good in goods]
+    if message.text in goods_list:
+        with open(f'orders/{message.from_user.id}_{datetime.now().strftime("%Y.%m.%d %H:%M:%S")}.txt', 'w', encoding='utf-8') as file:
+            file.write(message.text)
+        print(f'Пользователь с id {message.from_user.id} сделал заказ. Заказ сохранен в файле {file.name}.')
+        return 'Ваш заказ сформирован. Здесь какая-то инструкция, как получить товар.'
+    return 'Такого товара нет ☹️\n Попробуйте еще раз.'
+
+
+def show_my_orders_func(message):
+    listfiles = []
+    output_message = 'Ваши заказы:\n'
+
+    for file in os.listdir(os.path.abspath('orders')):
+        if file.startswith(f'{message.from_user.id}'):
+            listfiles.append(file)
+    for file_name in listfiles:
+        with open(f'orders/{file_name}', 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+            for line in lines:
+                output_message += f'{line}\n'
+    return output_message
+
+
 def history_input_func(message):
     with open('history.txt', 'a', encoding='utf-8') as file:
         date = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-        file.write(f'{date}: {message.text}\n')
+        file.write(f'{date} {message.text} @@@{message.from_user.id}\n')
 
 
-def history_output_func():
+def history_output_func(message):
     with open('history.txt', 'r', encoding='utf-8') as file:
-        output_message = ''
-        lines = [line.rstrip() for line in file]
-        lines.sort(reverse=True)
-        print(lines)
-        for i in range(10):
-            output_message += f'{lines[i]}\n'
+        output_message = 'История Ваших последних 10 запросов:\n'
 
+        lines = [
+            line.rstrip()[:-(len(str(message.from_user.id)) + 4)]
+            for line in file
+            if f'@@@{message.from_user.id}' in line.rstrip()
+        ]
+
+        lines = lines[:-11:-1]
+        for line in lines:
+            output_message += f'{line}\n'
     return output_message
 
 
@@ -64,15 +127,3 @@ def statistics_input_func(message):
 
     with open('request_statistics.json', 'w', encoding='utf-8') as file:
         json.dump(new_dict, file, indent=4, ensure_ascii=False)
-
-
-def statistics_output_func():
-    with open('request_statistics.json', 'r', encoding='utf-8') as file:
-        input_dict = json.load(file)
-        sorted_dict = dict(sorted(input_dict.items(), key=lambda x: x[1], reverse=True))
-        output_message = ''
-        for key, value in sorted_dict.items():
-            output_message += f'{key}: {value}\n'
-        return output_message
-
-# statistics_output_func()
