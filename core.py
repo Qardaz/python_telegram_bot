@@ -69,24 +69,35 @@ def show_all_func():
 
 
 def check_good_func(message):
-    goods_list = [good['name'] for good in goods]
-    if message.text in goods_list:
-        with open(f'orders/{message.from_user.id}_{datetime.now().strftime("%Y.%m.%d %H:%M:%S")}.txt', 'w', encoding='utf-8') as file:
-            file.write(message.text)
-        print(f'Пользователь с id {message.from_user.id} сделал заказ. Заказ сохранен в файле {file.name}.')
-        return 'Ваш заказ сформирован. Здесь какая-то инструкция, как получить товар.'
+    for good_dict in goods:
+        if good_dict['name'] == message.text:
+            order_dir_path = os.path.abspath('orders')
+            file_path = os.path.join(
+                order_dir_path,
+                f'{message.from_user.id}_{datetime.now().strftime("%Y.%m.%d %H:%M:%S")}.txt'
+            )
+
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(message.text)
+
+            print(f'Пользователь с id {message.from_user.id} сделал заказ. Заказ сохранен в файле {file.name}.')
+
+            return 'Ваш заказ сформирован. Здесь какая-то инструкция, как получить товар.'
+
     return 'Такого товара нет ☹️\n Попробуйте еще раз.'
 
 
 def show_my_orders_func(message):
     listfiles = []
     output_message = 'Ваши заказы:\n'
+    order_dir_path = os.path.abspath('orders')
 
-    for file in os.listdir(os.path.abspath('orders')):
+    for file in os.listdir(order_dir_path):
         if file.startswith(f'{message.from_user.id}'):
             listfiles.append(file)
     for file_name in listfiles:
-        with open(f'orders/{file_name}', 'r', encoding='utf-8') as file:
+        file_path = os.path.join(order_dir_path, file_name)
+        with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
             for line in lines:
                 output_message += f'{line}\n'

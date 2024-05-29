@@ -131,7 +131,7 @@ def custom_high_lim(message, how_many, low_lim):
 
 
 @bot.message_handler(commands=['start'])
-def start_or_help_message(message):
+def start_message(message):
     history_input_func(message)
     statistics_input_func(message.text)
 
@@ -152,14 +152,6 @@ def history_message(message):
     statistics_input_func(message.text)
 
     bot.send_message(message.chat.id, history_output_func(message))
-
-
-@bot.message_handler(commands=['statistics'])
-def output_statistics_message(message):
-    history_input_func(message)
-    statistics_input_func(message.text)
-
-    bot.send_message(message.chat.id, statistics_output_func())
 
 
 @bot.message_handler(content_types=["text"])
