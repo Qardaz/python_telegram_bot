@@ -1,7 +1,9 @@
 from datetime import datetime
 import json
 import os
+
 from goods import goods
+from database.database_models import *
 
 
 def command_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_lim=None):
@@ -84,7 +86,7 @@ def check_good_func(message):
 
             return 'Ваш заказ сформирован. Здесь какая-то инструкция, как получить товар.'
 
-    return 'Такого товара нет ☹️\n Попробуйте еще раз.'
+    return 'Такого товара нет ☹️\nПопробуйте еще раз.'
 
 
 def show_my_orders_func(message):
@@ -105,36 +107,24 @@ def show_my_orders_func(message):
 
 
 def history_input_func(message):
-    with open('history.txt', 'a', encoding='utf-8') as file:
-        date = datetime.now().strftime("%Y.%m.%d %H:%M:%S")
-        file.write(f'{date} {message.text} @@@{message.from_user.id}\n')
+    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    History.create(user_id=message.from_user.id, datetime=date, message=message.text)
 
 
 def history_output_func(message):
-    with open('history.txt', 'r', encoding='utf-8') as file:
-        output_message = 'История Ваших последних 10 запросов:\n'
+    output_message = 'История Ваших последних 10 запросов:\n'
+    for history in History.select().where(History.user_id == message.from_user.id):
+        output_message += f'{history.datetime} {history.message}\n'
 
-        lines = [
-            line.rstrip()[:-(len(str(message.from_user.id)) + 4)]
-            for line in file
-            if f'@@@{message.from_user.id}' in line.rstrip()
-        ]
-
-        lines = lines[:-11:-1]
-        for line in lines:
-            output_message += f'{line}\n'
     return output_message
 
 
 def statistics_input_func(message):
     with open('request_statistics.json', 'r', encoding='utf-8') as file:
         new_dict = json.load(file)
-        # print(new_dict)
         if message not in new_dict:
             new_dict[message] = 0
-        # print(new_dict)
         new_dict[f'{message}'] += 1
-        # print(new_dict)
 
     with open('request_statistics.json', 'w', encoding='utf-8') as file:
         json.dump(new_dict, file, indent=4, ensure_ascii=False)

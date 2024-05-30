@@ -1,10 +1,9 @@
 import telebot
 
 from config import token
-from core import command_func, check_message_func, history_input_func, history_output_func, statistics_input_func, \
-    show_all_func, check_good_func, show_my_orders_func
+from core import *
 from commands import default_commands
-import messages
+from database.database_models import *
 
 bot = telebot.TeleBot(token)
 
@@ -21,7 +20,7 @@ def hello(message):
 def primitive_sort_command(message):
     history_input_func(message)
     statistics_input_func(message.text)
-    bot.send_message(message.chat.id, messages.how_many_goods)
+    bot.send_message(message.chat.id, Message.get(name='how_many_goods').message)
 
     bot.register_next_step_handler(message, primitive_sort_output, message.text.lstrip('/'))
 
@@ -42,7 +41,7 @@ def primitive_sort_output(message, coming_command):
     if check_message_func(how_many):
         bot.send_message(message.chat.id, command_func(how_many=how_many, sorted_by=sorted_by, reverse=reverse))
     else:
-        bot.send_message(message.chat.id, messages.error_how_many_message)
+        bot.send_message(message.chat.id, Message.get(name='error_how_many').message)
         message.text = "/" + coming_command
         primitive_sort_command(message=message)
 
@@ -60,7 +59,7 @@ def buy_command(message):
     history_input_func(message)
     statistics_input_func(message.text)
 
-    bot.send_message(message.chat.id, messages.buy_message)
+    bot.send_message(message.chat.id, Message.get(name='buy').message)
     bot.register_next_step_handler(message, buy_good)
 
 
@@ -84,7 +83,7 @@ def custom_command(message):
     history_input_func(message)
     statistics_input_func(message.text)
 
-    bot.send_message(message.chat.id, messages.how_many_goods)
+    bot.send_message(message.chat.id, Message.get(name='how_many_goods').message)
     bot.register_next_step_handler(message, custom_how_many)
 
 
@@ -94,10 +93,10 @@ def custom_how_many(message):
 
     how_many = message.text
     if check_message_func(how_many):
-        bot.send_message(message.chat.id, messages.low_lim_message)
+        bot.send_message(message.chat.id, Message.get(name='low_lim').message)
         bot.register_next_step_handler(message, custom_low_lim, how_many)
     else:
-        bot.send_message(message.chat.id, messages.error_how_many_message)
+        bot.send_message(message.chat.id, Message.get(name='error_how_many').message)
         message.text = "/custom"
         custom_command(message=message)
 
@@ -108,10 +107,10 @@ def custom_low_lim(message, how_many):
 
     low_lim = message.text
     if check_message_func(low_lim):
-        bot.send_message(message.chat.id, messages.high_lim_message)
+        bot.send_message(message.chat.id, Message.get(name='high_lim').message)
         bot.register_next_step_handler(message, custom_high_lim, how_many, low_lim)
     else:
-        bot.send_message(message.chat.id, messages.error_how_many_message)
+        bot.send_message(message.chat.id, Message.get(name='error_how_many').message)
         message.text = how_many
         custom_how_many(message=message)
 
@@ -125,7 +124,7 @@ def custom_high_lim(message, how_many, low_lim):
         bot.send_message(message.chat.id, command_func(how_many=how_many, sorted_by='price',
                                                        reverse=False, high_lim=high_lim, low_lim=low_lim))
     else:
-        bot.send_message(message.chat.id, messages.error_how_many_message)
+        bot.send_message(message.chat.id, Message.get(name='error_how_many').message)
         message.text = low_lim
         custom_low_lim(message=message, how_many=how_many)
 
@@ -135,7 +134,7 @@ def start_message(message):
     history_input_func(message)
     statistics_input_func(message.text)
 
-    bot.send_message(message.chat.id, messages.start_message)
+    bot.send_message(message.chat.id, Message.get(name='start').message)
 
 
 @bot.message_handler(commands=['help'])
@@ -143,7 +142,7 @@ def help_message(message):
     history_input_func(message)
     statistics_input_func(message.text)
 
-    bot.send_message(message.chat.id, messages.help_message)
+    bot.send_message(message.chat.id, Message.get(name='help').message)
 
 
 @bot.message_handler(commands=['history'])
