@@ -1,25 +1,24 @@
 from datetime import datetime
 import json
-import os
 
-from goods import goods
 from database.database_models import *
 
 
 def command_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_lim=None):
-    goods_list = sorted(goods, key=lambda d: d[sorted_by], reverse=reverse)
+    goods_quantity = Good.select().count()
+
     how_many = int(how_many)
     answer_string = ''
-    if how_many > len(goods_list):
-        how_many = len(goods_list)
+
+    if how_many > goods_quantity:
+        how_many = goods_quantity
         answer_string += 'Введено число, превышающее общее количество товаров. Будут выведены все товары.\n'
 
     if low_lim and high_lim:
         low_lim, high_lim = int(low_lim), int(high_lim)
 
-        new_goods_list = list()
-
         if low_lim > high_lim:
+            answer_string += 'Верхняя граница меньше нижней, значения границ будут поменяны местами.\n'
             low_lim, high_lim = high_lim, low_lim
 
         if low_lim == high_lim:
@@ -28,24 +27,30 @@ def command_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_
         if high_lim - low_lim < how_many:
             how_many = high_lim - low_lim + 1
 
-        if low_lim > how_many:
+        if low_lim > Good.get(id=(goods_quantity - 1)).price:
             return 'Нижняя граница превышает стоимость самого дорогого товара. Повторите команду заново.'
 
-        if high_lim < how_many:
+        if high_lim < Good.get(id=0).price:
             return 'Верхняя граница ниже стоимости самого дешевого товара. Повторите команду заново.'
 
-        for i in range(len(goods_list)):
-            price = goods_list[i].get('price')
-            if price >= low_lim and price <= high_lim:
-                new_goods_list.append(goods_list[i])
+    else:
+        good = Good.select(Good.price).order_by(Good.price.asc()).limit(1)
+        for prices in good:
+            low_lim = prices.price
+        good = Good.select(Good.price).order_by(Good.price.desc()).limit(1)
+        for prices in good:
+            high_lim = prices.price
 
-        goods_list = new_goods_list
+    sort = sorted_by
 
-    for i in range(how_many):
-        name = goods_list[i].get('name')
-        price = goods_list[i].get('price')
-        answer_string += (f'\nНазвание товара: {name}\n'
-                          f'Цена товара: {price}$\n')
+    if reverse:
+        sort += " Desc"
+
+    for good in Good.select().order_by(SQL(sort)).where(
+            (Good.price >= low_lim) & (Good.price <= high_lim)
+            ).limit(how_many):
+        answer_string += (f'\nНазвание товара: {good.name}\n'
+                          f'Цена товара: {good.price}$\n')
 
     return answer_string
 
@@ -61,18 +66,16 @@ def check_message_func(message):
 def show_all_func():
     output_message = 'Список товаров:\n'
 
-    for good in goods:
-        output_message += (
-            f'\nНаименование товара: {good["name"]}\n'
-            f'Цена товара: {good["price"]}$\n'
-        )
+    for good in Good.select().order_by(Good.price.asc()):
+        output_message += (f'\nНаименование товара: {good.name}\n'
+                           f'Цена товара: {good.price}$\n')
 
     return output_message
 
 
 def check_good_func(message):
-    for good_dict in goods:
-        if good_dict['name'] == message.text:
+    for good in Good.select():
+        if good.name == message.text:
             order_dir_path = os.path.abspath('orders')
             file_path = os.path.join(
                 order_dir_path,
@@ -113,7 +116,8 @@ def history_input_func(message):
 
 def history_output_func(message):
     output_message = 'История Ваших последних 10 запросов:\n'
-    for history in History.select().order_by(History.datetime.desc()).where(History.user_id == message.from_user.id).limit(10):
+    for history in (History.select().order_by(History.datetime.desc())
+            .where(History.user_id == message.from_user.id).limit(10)):
         output_message += f'{history.datetime} {history.message}\n'
 
     return output_message

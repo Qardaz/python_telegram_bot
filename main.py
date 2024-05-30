@@ -34,7 +34,7 @@ def primitive_sort_output(message, coming_command):
         sorted_by = 'price'
     elif coming_command == "hot":
         reverse = True
-        sorted_by = 'orders_quantity'
+        sorted_by = 'order_quantity'
     else:
         reverse = False
         sorted_by = 'price'
