@@ -37,16 +37,17 @@ def command_func(how_many, reverse=False, sorted_by='price', low_lim=None, high_
         good = Good.select(Good.price).order_by(Good.price.asc()).limit(1)
         for prices in good:
             low_lim = prices.price
+
         good = Good.select(Good.price).order_by(Good.price.desc()).limit(1)
         for prices in good:
             high_lim = prices.price
 
-    sort = sorted_by
-
     if reverse:
-        sort += " Desc"
+        sorted_by += " desc"
+    else:
+        sorted_by += " asc"
 
-    for good in Good.select().order_by(SQL(sort)).where(
+    for good in Good.select().order_by(SQL(sorted_by)).where(
             (Good.price >= low_lim) & (Good.price <= high_lim)
             ).limit(how_many):
         answer_string += (f'\nНазвание товара: {good.name}\n'
@@ -79,7 +80,7 @@ def check_good_func(message):
             order_dir_path = os.path.abspath('orders')
             file_path = os.path.join(
                 order_dir_path,
-                f'{message.from_user.id}_{datetime.now().strftime("%Y.%m.%d %H:%M:%S")}.txt'
+                f'{message.from_user.id} {datetime.now().strftime("%Y.%m.%d %H_%M_%S")}.txt'
             )
 
             with open(file_path, 'w', encoding='utf-8') as file:
