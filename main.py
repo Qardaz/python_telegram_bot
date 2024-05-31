@@ -51,7 +51,7 @@ def show_all_command(message):
     history_input_func(message)
     statistics_input_func(message.text)
 
-    bot.send_message(message.chat.id, show_all_func())
+    bot.send_message(message.chat.id, command_func(how_many=Good.select().count()))
 
 
 @bot.message_handler(commands=['buy'])
