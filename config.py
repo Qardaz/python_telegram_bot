@@ -1,6 +1,9 @@
 from telebot.types import BotCommand
+import os
+from dotenv import load_dotenv
 
-token = '6855239878:AAHl9R057mWgaef_mbpyRvvowUBauLVJ05U'
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 default_commands = [
     # BotCommand('hello-world', 'привет, мир'),
