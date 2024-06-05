@@ -9,6 +9,9 @@ def show_my_orders_func(message):
 
     order_dir_path = os.path.abspath('orders')
 
+    if not os.path.exists(order_dir_path):
+        os.mkdir(order_dir_path)
+
     for file in os.listdir(order_dir_path):
         if file.startswith(f'{message.from_user.id}'):
             listfiles.append(file)

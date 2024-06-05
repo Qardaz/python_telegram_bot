@@ -12,6 +12,9 @@ def check_good_func(message):
                 f'{message.from_user.id} {datetime.now().strftime("%Y.%m.%d %H_%M_%S")}.txt'
             )
 
+            if not os.path.exists(order_dir_path):
+                os.mkdir(order_dir_path)
+
             with open(file_path, 'w', encoding='utf-8') as file:
                 file.write(message.text)
 
